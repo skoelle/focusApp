@@ -1,7 +1,7 @@
 <Project>
   <!-- Exclude node_modules from Visual Studio -->
   <PropertyGroup>
-    <DefaultItemExcludes>$(DefaultItemExcludes);client\node_modules\**</DefaultItemExcludes>
+    <DefaultItemExcludes>$(DefaultItemExcludes);client\node_modules\**;FocusApp.Tests\**</DefaultItemExcludes>
     <EnableDefaultItems>true</EnableDefaultItems>
   </PropertyGroup>
 
