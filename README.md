@@ -1,174 +1,114 @@
 # FocusApp - Todo Application
 
-Eine moderne, minimalistische Todo-Anwendung mit Drag & Drop, gebaut mit React und ASP.NET Core.
+Eine moderne, minimalistische Todo-Anwendung mit Drag & Drop, gebaut mit React und ASP.NET Core 8.0.
 
 ## 🚀 Features
 
-- ✅ **Todo-Verwaltung** - Erstellen, Bearbeiten, Löschen von Aufgaben
-- 🎯 **Drag & Drop** - Intuitive Neuordnung der Aufgaben
-- 🎨 **Dark/Light Mode** - Automatische Theme-Erkennung
-- 📱 **Responsive Design** - Optimiert für Desktop und Mobile
-- 💾 **Persistente Speicherung** - Daten bleiben nach Neustart erhalten
-- 🔄 **RESTful API** - Saubere Backend-Architektur
+- **Todo-Verwaltung** - Erstellen, Bearbeiten, Loschen von Aufgaben
+- **Drag & Drop** - Intuitive Neuordnung der Aufgaben
+- **Dark/Light Mode** - Automatische Theme-Erkennung
+- **Responsive Design** - Optimiert fur Desktop und Mobile
+- **RESTful API** - Saubere Backend-Architektur
 
 ## 📋 Voraussetzungen
 
-- **.NET 9.0 SDK** oder höher
-- **Node.js 18+** und **npm** (für React-Entwicklung)
-- **Linux Server** (Ubuntu/Debian empfohlen) für Deployment
+- **Docker** und **Docker Compose**
+- **MariaDB** (externer Host, z.B. LXC Container)
+- **Git**
 
-## 🛠️ Installation & Setup
+## 🐳 Deployment
 
-### 1. Projekt klonen/kopieren
+### 1. MariaDB initialisieren (einmalig)
+
+Die FocusApp benötigt eine MariaDB Datenbank. Das Init-Script erstellt die Datenbank, den User und die Tabellen auf dem externen MariaDB-Server.
 
 ```bash
-# Projektverzeichnis erstellen
-sudo mkdir -p /opt/tools/FocusApp
-sudo chown $USER:$USER /opt/tools/FocusApp
+# .env editieren - echte MariaDB-Zugangsdaten eintragen
+vim .env
+
+# Init-Script ausfuehren (benoetigt MariaDB Root-Zugang)
+chmod +x init-db.sh
+./init-db.sh
 ```
 
-### 2. .NET Runtime installieren
-
-```bash
-# .NET 9.0 Runtime herunterladen
-cd /tmp
-wget https://download.visualstudio.microsoft.com/download/pr/...dotnet-runtime-9.0.0-linux-x64.tar.gz
-
-# Entpacken nach /opt/dotnet
-sudo mkdir -p /opt/dotnet
-sudo tar -xzf dotnet-runtime-9.0.0-linux-x64.tar.gz -C /opt/dotnet
-
-# PATH setzen
-echo 'export PATH=$PATH:/opt/dotnet' >> ~/.bashrc
-source ~/.bashrc
+Die `.env` enthalt:
+```
+DB_HOST=maria-db-server.domain.local
+DB_PORT=3306
+DB_NAME=focusapp
+DB_USER=focusapp
+DB_PASSWORD=change-password
+DB_ROOT_PASSWORD=change-root-password
 ```
 
-### 3. React Frontend bauen
+### 2. Docker Image bauen
 
 ```bash
-cd /pfad/zu/deinem/projekt/FocusApp/ClientApp
-
-# Dependencies installieren
-npm install
-
-# Production Build erstellen
-npm run build
+docker compose build
 ```
 
-**Wichtig:** Der Build landet in `ClientApp/build/` und wird automatisch vom Backend ausgeliefert.
-
-### 4. ASP.NET Backend veröffentlichen
+Oder direkt aus dem GitHub Container Registry pullen (nach dem ersten CI-Run):
 
 ```bash
-cd /pfad/zu/deinem/projekt/FocusApp
+docker compose pull
+```
 
-# Release Build erstellen
-dotnet publish -c Release -o /opt/tools/FocusApp
+### 3. App starten
+
+```bash
+docker compose up -d
+```
+
+Die App laeuft auf: `http://localhost:5000`
+
+### 4. Logs anzeigen
+
+```bash
+docker compose logs -f
+```
+
+## 🔄 CI/CD mit GitHub Actions
+
+Bei jedem Push auf `main` wird automatisch:
+
+1. Das Docker-Image gebaut (Multi-Stage: Node + .NET)
+2. Nach `ghcr.io` (GitHub Container Registry) gepusht
+3. Alte Images aufgeraeumt (letzte 4 bleiben erhalten)
+
+### Manuelles Deployment auf dem Host
+
+```bash
+# Neuestes Image pullen
+docker compose pull
+
+# Container neustarten
+docker compose up -d
 ```
 
 ## ⚙️ Konfiguration
 
-### appsettings.Production.json
+Die App wird ueber Umgebungsvariablen konfiguriert, die in `docker-compose.yml` gesetzt werden:
 
-Erstelle `/opt/tools/FocusApp/appsettings.Production.json`:
+| Variable | Beschreibung |
+|---|---|
+| `ASPNETCORE_ENVIRONMENT` | `Production` oder `Development` |
+| `ConnectionStrings__DefaultConnection` | MariaDB Connection String |
 
-```json
-{
-  "Logging": {
-    "LogLevel": {
-      "Default": "Warning",
-      "Microsoft": "Warning",
-      "Microsoft.AspNetCore": "Warning",
-      "Microsoft.Hosting.Lifetime": "Information"
-    }
-  },
-  "AllowedHosts": "*"
-}
+Der Connection-String wird aus der `.env` zusammengesetzt:
 ```
-
-**Log Levels:**
-- `Error` - Nur Fehler
-- `Warning` - Warnungen + Fehler (empfohlen)
-- `Information` - Mehr Details
-- `None` - Kein Logging
-
-## 🔧 Systemd Service Setup
-
-### Service-Datei erstellen
-
-```bash
-sudo vim /etc/systemd/system/focusapp.service
-```
-
-**Inhalt:**
-
-```ini
-[Unit]
-Description=FocusApp Todo Application
-After=network.target
-
-[Service]
-Type=simple
-WorkingDirectory=/opt/tools/FocusApp
-ExecStart=/opt/dotnet/dotnet /opt/tools/FocusApp/FocusApp.dll
-Restart=always
-RestartSec=10
-User=stefan
-Environment=ASPNETCORE_ENVIRONMENT=Production
-Environment=DOTNET_ROOT=/opt/dotnet
-Environment=ASPNETCORE_URLS=http://0.0.0.0:5000
-SyslogIdentifier=focusapp
-StandardOutput=journal
-StandardError=journal
-
-[Install]
-WantedBy=multi-user.target
-```
-
-**Wichtig:** 
-- `Type=simple` verwenden (nicht `notify`)
-- `User` anpassen auf deinen Linux-User
-- Port `5000` ist der Standard, kann angepasst werden
-
-### Service aktivieren
-
-```bash
-# Service neu laden
-sudo systemctl daemon-reload
-
-# Service starten
-sudo systemctl start focusapp.service
-
-# Service beim Boot aktivieren
-sudo systemctl enable focusapp.service
-
-# Status prüfen
-sudo systemctl status focusapp.service
+Server=${DB_HOST};Port=${DB_PORT};Database=${DB_NAME};User=${DB_USER};Password=${DB_PASSWORD}
 ```
 
 ## 📡 API Endpoints
 
 ### Todos abrufen
 ```http
-GET /api/todos
-```
-
-**Response:**
-```json
-[
-  {
-    "id": 1,
-    "title": "Erste Aufgabe",
-    "description": "Beschreibung",
-    "createdAt": "2026-01-29T22:00:00Z",
-    "order": 0
-  }
-]
+GET /api/focustasks
 ```
 
 ### Todo erstellen
 ```http
-POST /api/todos
+POST /api/focustasks
 Content-Type: application/json
 
 {
@@ -179,24 +119,24 @@ Content-Type: application/json
 
 ### Todo aktualisieren
 ```http
-PUT /api/todos/{id}
+PUT /api/focustasks/{id}
 Content-Type: application/json
 
 {
   "id": 1,
-  "title": "Geändert",
+  "title": "Geaendert",
   "description": "Neue Beschreibung"
 }
 ```
 
-### Todo löschen
+### Todo loeschen
 ```http
-DELETE /api/todos/{id}
+DELETE /api/focustasks/{id}
 ```
 
 ### Reihenfolge aktualisieren
 ```http
-POST /api/todos/reorder
+POST /api/focustasks/reorder
 Content-Type: application/json
 
 [1, 3, 2, 4]
@@ -204,119 +144,96 @@ Content-Type: application/json
 
 ## 🎯 Entwicklung
 
-### Backend starten (Development)
+### Backend (Development)
 
 ```bash
-cd FocusApp
 dotnet run
 ```
 
-API läuft auf: `http://localhost:5000`
+API laeuft auf: `http://localhost:5000`
 
-### Frontend starten (Development)
-
-```bash
-cd FocusApp/ClientApp
-npm start
-```
-
-React Dev Server läuft auf: `http://localhost:3000`
-
-**Proxy:** API-Calls werden automatisch an `http://localhost:5000` weitergeleitet (siehe `package.json`).
-
-### Datenbank
-
-Todos werden in einer **SQLite-Datenbank** gespeichert:
-- Datei: `/opt/tools/FocusApp/todos.db`
-- Automatische Erstellung beim ersten Start
-- Entity Framework Core mit Code-First Migrations
-
-## 🐛 Troubleshooting
-
-### Service startet nicht
+### Frontend (Development)
 
 ```bash
-# Logs ansehen
-sudo journalctl -u focusapp.service -n 50 --no-pager
-
-# Manuell testen
-cd /opt/tools/FocusApp
-/opt/dotnet/dotnet FocusApp.dll
+cd client
+npm install
+npm run dev
 ```
 
-### Service hängt bei "starting"
-
-**Problem:** `Type=notify` statt `Type=simple` in Service-Datei.
-
-**Lösung:** Service-Datei editieren, `Type=simple` verwenden, dann:
-```bash
-sudo systemctl daemon-reload
-sudo systemctl restart focusapp.service
-```
-
-### Port bereits belegt
-
-```bash
-# Port-Verwendung prüfen
-sudo netstat -tlnp | grep 5000
-
-# Anderen Port in Service-Datei setzen
-Environment=ASPNETCORE_URLS=http://0.0.0.0:5001
-```
-
-### Datenbank-Fehler
-
-```bash
-# Datenbank löschen und neu erstellen lassen
-rm /opt/tools/FocusApp/todos.db
-sudo systemctl restart focusapp.service
-```
+React Dev Server laeuft auf: `http://localhost:5173`
+API-Calls werden automatisch an `http://localhost:5000` weitergeleitet (siehe `vite.config.ts`).
 
 ## 📦 Projektstruktur
 
 ```
 FocusApp/
-├── ClientApp/                 # React Frontend
-│   ├── public/
+├── client/                    # React Frontend (TypeScript, Vite)
 │   ├── src/
-│   │   ├── components/       # React Komponenten
-│   │   ├── App.js           # Haupt-App
-│   │   ├── App.css          # Styles
-│   │   └── index.js         # Entry Point
-│   ├── package.json
-│   └── build/               # Production Build (nach npm run build)
+│   │   ├── components/        # React Komponenten
+│   │   ├── App.tsx            # Haupt-App
+│   │   ├── api.ts             # Axios API Client
+│   │   └── main.tsx           # Entry Point
+│   ├── build/                 # Production Build
+│   └── package.json
 ├── Controllers/
-│   └── TodosController.cs   # API Controller
+│   └── FocusTasksController.cs
+├── Data/
+│   └── FocusContext.cs        # EF Core DbContext
 ├── Models/
-│   ├── TodoItem.cs          # Todo Model
-│   └── TodoContext.cs       # EF Core DbContext
-├── Program.cs               # ASP.NET Startup
-├── FocusApp.csproj          # Projekt-Datei
-├── appsettings.json         # Basis-Config
-├── appsettings.Production.json  # Production-Config
-└── todos.db                 # SQLite Datenbank (runtime)
+│   └── FocusTask.cs           # Domain Model
+├── Program.cs                 # ASP.NET Startup
+├── FocusApp.csproj            # Projekt-Datei
+├── appsettings.json           # Config
+├── Dockerfile                 # Multi-Stage Docker Build
+├── docker-compose.yml         # Docker Compose Konfiguration
+├── .env.example               # Environment Template
+├── init-db.sql                # MariaDB Init Script
+└── init-db.sh                 # DB Init Shell Script
+```
+
+## 🐛 Troubleshooting
+
+### Container startet nicht
+
+```bash
+# Logs pruefen
+docker compose logs app
+
+# Container Status
+docker compose ps
+```
+
+### Datenbank-Fehler
+
+```bash
+# Pruefen ob MariaDB erreichbar ist
+mysql -h $DB_HOST -u $DB_USER -p
+
+# DB neu initialisieren
+./init-db.sh
+```
+
+### Port bereits belegt
+
+Port in `docker-compose.yml` aendern:
+```yaml
+ports:
+  - "5001:5000"
 ```
 
 ## 🔐 Sicherheit
 
-### Firewall-Regeln
-
-```bash
-# Nur lokalen Zugriff erlauben (Standard)
-sudo ufw deny 5000
-
-# Für Netzwerkzugriff:
-sudo ufw allow 5000/tcp
-```
-
 ### Reverse Proxy (nginx)
 
-Für Production empfohlen:
+Fuer Production mit HTTPS empfohlen:
 
 ```nginx
 server {
-    listen 80;
+    listen 443 ssl;
     server_name focus.example.com;
+
+    ssl_certificate     /etc/ssl/certs/focus.crt;
+    ssl_certificate_key /etc/ssl/private/focus.key;
 
     location / {
         proxy_pass http://localhost:5000;
@@ -331,100 +248,7 @@ server {
 }
 ```
 
-## 📊 Monitoring
-
-### Service-Status prüfen
-
-```bash
-# Aktiver Status
-sudo systemctl status focusapp.service
-
-# Letzte Logs
-sudo journalctl -u focusapp.service -n 50
-
-# Live-Logs folgen
-sudo journalctl -u focusapp.service -f
-```
-
-### Ressourcen-Nutzung
-
-```bash
-# Prozess finden
-ps aux | grep FocusApp
-
-# Speicher/CPU-Nutzung
-top -p $(pgrep -f FocusApp.dll)
-```
-
-## 🚀 Updates & Deployment
-
-### 1. Code aktualisieren
-
-```bash
-# Frontend neu bauen
-cd ClientApp
-npm run build
-
-# Backend neu veröffentlichen
-cd ..
-dotnet publish -c Release -o /opt/tools/FocusApp
-```
-
-### 2. Service neu starten
-
-```bash
-sudo systemctl restart focusapp.service
-sudo systemctl status focusapp.service
-```
-
-### 3. Datenbank-Migration (bei Schema-Änderungen)
-
-```bash
-cd FocusApp
-
-# Migration erstellen
-dotnet ef migrations add MigrationName
-
-# Migration anwenden
-dotnet ef database update
-
-# Oder automatisch beim Start (bereits konfiguriert in Program.cs)
-```
-
-## 📝 Nützliche Befehle
-
-```bash
-# Service-Befehle
-sudo systemctl start focusapp.service      # Starten
-sudo systemctl stop focusapp.service       # Stoppen
-sudo systemctl restart focusapp.service    # Neustarten
-sudo systemctl status focusapp.service     # Status
-sudo systemctl enable focusapp.service     # Auto-Start aktivieren
-sudo systemctl disable focusapp.service    # Auto-Start deaktivieren
-
-# Logs
-sudo journalctl -u focusapp.service        # Alle Logs
-sudo journalctl -u focusapp.service -f     # Live-Logs
-sudo journalctl -u focusapp.service --since "1 hour ago"  # Letzte Stunde
-
-# Datenbank
-sqlite3 /opt/tools/FocusApp/todos.db       # DB öffnen
-.tables                                     # Tabellen anzeigen
-SELECT * FROM TodoItems;                    # Alle Todos
-.quit                                       # Beenden
-```
-
-## 🎨 Design System
-
-Die App verwendet ein eigenes Design System mit:
-- CSS Custom Properties für theming
-- Responsive Design (Mobile-First)
-- Accessibility-Features (ARIA, Keyboard-Navigation)
-- Dark/Light Mode Support
-
-
 ---
 
-**Version:** 1.0.0  
-**Letzte Aktualisierung:** 29. Januar 2026  
-**Status:** ✅ Production Ready
+**Version:** 2.0.0
+**Letzte Aktualisierung:** 09. August 2026
