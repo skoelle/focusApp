@@ -20,24 +20,24 @@ Eine moderne, minimalistische Todo-Anwendung mit Drag & Drop, gebaut mit React u
 
 ### 1. MariaDB initialisieren (einmalig)
 
-Die FocusApp benötigt eine MariaDB Datenbank. Das Init-Script erstellt die Datenbank, den User und die Tabellen auf dem externen MariaDB-Server.
+Die FocusApp benötigt eine MariaDB Datenbank. Das Init-Script erstellt die Datenbank und den User auf dem externen MariaDB-Server.
 
 ```bash
-# .env editieren - echte MariaDB-Zugangsdaten eintragen
+# .env aus Template erstellen und editieren
+cp .env.example .env
 vim .env
 
 # Init-Script als MariaDB Root ausfuehren
 mysql -h $DB_HOST -u root -p < init-db.sql
 ```
 
-Die `.env` enthalt:
+Die `.env.example` enthalt:
 ```
 DB_HOST=maria-db-server.domain.local
 DB_PORT=3306
 DB_NAME=focusapp
 DB_USER=focusapp
-DB_PASSWORD=change-password
-DB_ROOT_PASSWORD=change-root-password
+DB_PASSWORD=<CHANGE_ME>
 ```
 
 ### 2. Docker Image bauen
