@@ -4,6 +4,7 @@ import { focusTaskApi } from './api';
 import { FocusTask } from './types';
 import TaskCard from './components/TaskCard';
 import TaskForm from './components/TaskForm';
+import './styles/design-system.css';
 import './App.css';
 
 const App: React.FC = () => {
