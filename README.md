@@ -26,9 +26,8 @@ Die FocusApp benötigt eine MariaDB Datenbank. Das Init-Script erstellt die Date
 # .env editieren - echte MariaDB-Zugangsdaten eintragen
 vim .env
 
-# Init-Script ausfuehren (benoetigt MariaDB Root-Zugang)
-chmod +x init-db.sh
-./init-db.sh
+# Init-Script als MariaDB Root ausfuehren
+mysql -h $DB_HOST -u root -p < init-db.sql
 ```
 
 Die `.env` enthalt:
@@ -180,15 +179,15 @@ FocusApp/
 ├── Data/
 │   └── FocusContext.cs        # EF Core DbContext
 ├── Models/
-│   └── FocusTask.cs           # Domain Model
+│   ├── FocusTask.cs           # Domain Model
+│   └── Dtos.cs                # API Data Transfer Objects
 ├── Program.cs                 # ASP.NET Startup
 ├── FocusApp.csproj            # Projekt-Datei
 ├── appsettings.json           # Config
 ├── Dockerfile                 # Multi-Stage Docker Build
 ├── docker-compose.yml         # Docker Compose Konfiguration
 ├── .env.example               # Environment Template
-├── init-db.sql                # MariaDB Init Script
-└── init-db.sh                 # DB Init Shell Script
+└── init-db.sql                # MariaDB Init Script
 ```
 
 ## 🐛 Troubleshooting
@@ -210,7 +209,7 @@ docker compose ps
 mysql -h $DB_HOST -u $DB_USER -p
 
 # DB neu initialisieren
-./init-db.sh
+mysql -h $DB_HOST -u root -p < init-db.sql
 ```
 
 ### Port bereits belegt

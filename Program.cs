@@ -4,11 +4,23 @@ using Microsoft.Extensions.FileProviders;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Connection-String aus ENV-Variablen aufbauen (appsettings.json ist Fallback)
+static string BuildConnectionString(IConfiguration config)
+{
+    return $"Server={config["DB_HOST"] ?? "localhost"};" +
+           $"Port={config["DB_PORT"] ?? "3306"};" +
+           $"Database={config["DB_NAME"] ?? "focusapp"};" +
+           $"User={config["DB_USER"] ?? "focusapp"};" +
+           $"Password={config["DB_PASSWORD"] ?? "change-password"}";
+}
+
+var connectionString = BuildConnectionString(builder.Configuration);
+
 // Add services
 builder.Services.AddDbContext<FocusContext>(options =>
     options.UseMySql(
-        builder.Configuration.GetConnectionString("DefaultConnection"),
-        ServerVersion.AutoDetect(builder.Configuration.GetConnectionString("DefaultConnection"))
+        connectionString,
+        ServerVersion.AutoDetect(connectionString)
     )
 );
 
@@ -30,11 +42,32 @@ builder.WebHost.UseUrls("http://0.0.0.0:5000");
 
 var app = builder.Build();
 
-// Ensure database is created
+// Ensure database is created (mit Retry fuer gestartete MariaDB)
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<FocusContext>();
-    db.Database.EnsureCreated();
+    var maxRetries = 5;
+    for (int i = 1; i <= maxRetries; i++)
+    {
+        try
+        {
+            db.Database.EnsureCreated();
+            Console.WriteLine("Database connected!");
+            break;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Database connection attempt {i}/{maxRetries} failed: {ex.Message}");
+            if (i == maxRetries)
+            {
+                Console.WriteLine("Could not connect to database after max retries. Exiting.");
+                throw;
+            }
+            var delay = Math.Min(i * 5, 30);
+            Console.WriteLine($"Retrying in {delay}s...");
+            Thread.Sleep(delay * 1000);
+        }
+    }
 }
 
 if (app.Environment.IsDevelopment())
@@ -73,7 +106,7 @@ else
 app.UseAuthorization();
 app.MapControllers();
 
-// FALLBACK für SPA (alle nicht-API Routes >> index.html)
+// FALLBACK fï¿½r SPA (alle nicht-API Routes >> index.html)
 app.MapFallback(async context =>
 {
     var indexPath = Path.Combine(clientPath, "index.html");
