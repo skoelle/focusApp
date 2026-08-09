@@ -67,3 +67,6 @@ coverage/
 # Temporary files
 tmp/
 temp/
+focusapp-demo.db
+focusapp-demo.db-wal
+focusapp-demo.db-shm
