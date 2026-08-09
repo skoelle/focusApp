@@ -12,12 +12,7 @@
     <EmbeddedResource Remove="client\node_modules\**" />
     <None Remove="client\node_modules\**" />
     
-    <!-- Auch Build/Dist ausschließen -->
-    <Compile Remove="client\build\**" />
-    <Content Remove="client\build\**" />
-    <None Remove="client\build\**" />
-    
-    <Compile Remove="client\dist\**" />
+    <!-- Auch Dist ausschließen -->
     <Content Remove="client\dist\**" />
     <None Remove="client\dist\**" />
   </ItemGroup>

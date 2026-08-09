@@ -67,11 +67,6 @@ jobs:
           # Alle Versions-IDs abrufen, sortiert nach Erstellungsdatum (neueste zuerst)
           VERSION_IDS=$(gh api \
             -H "Accept: application/vnd.github+json" \
-            "/user/packages/maven/$PACKAGE_NAME/versions" \
-            --paginate \
-            -q 'sort_by(.created_at) | reverse | .[].id' 2>/dev/null || \
-          gh api \
-            -H "Accept: application/vnd.github+json" \
             "/user/packages/container/$PACKAGE_NAME/versions" \
             --paginate \
             -q 'sort_by(.created_at) | reverse | .[].id')
