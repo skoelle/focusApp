@@ -90,12 +90,11 @@ Die App wird ueber Umgebungsvariablen konfiguriert, die in `docker-compose.yml` 
 | Variable | Beschreibung |
 |---|---|
 | `ASPNETCORE_ENVIRONMENT` | `Production` oder `Development` |
-| `ConnectionStrings__DefaultConnection` | MariaDB Connection String |
-
-Der Connection-String wird aus der `.env` zusammengesetzt:
-```
-Server=${DB_HOST};Port=${DB_PORT};Database=${DB_NAME};User=${DB_USER};Password=${DB_PASSWORD}
-```
+| `DB_HOST` | MariaDB Host |
+| `DB_PORT` | MariaDB Port |
+| `DB_NAME` | Datenbankname |
+| `DB_USER` | Datenbank-User |
+| `DB_PASSWORD` | Datenbank-Passwort |
 
 ## 📡 API Endpoints
 
