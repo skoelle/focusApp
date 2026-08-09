@@ -9,6 +9,8 @@ Eine moderne, minimalistische Todo-Anwendung mit Drag & Drop, gebaut mit React u
 - 📱 **Responsive Design** - Optimiert fur Desktop und Mobile
 - 🔄 **RESTful API** - Saubere Backend-Architektur
 
+[![UI](docs/screenshot.png)](docs/screenshot.png)
+
 ## 📋 Voraussetzungen
 
 - **Docker** und **Docker Compose**
