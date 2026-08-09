@@ -1,0 +1,24 @@
+<Project>
+  <!-- Exclude node_modules from Visual Studio -->
+  <PropertyGroup>
+    <DefaultItemExcludes>$(DefaultItemExcludes);client\node_modules\**</DefaultItemExcludes>
+    <EnableDefaultItems>true</EnableDefaultItems>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Komplett von VS ausschließen -->
+    <Compile Remove="client\node_modules\**" />
+    <Content Remove="client\node_modules\**" />
+    <EmbeddedResource Remove="client\node_modules\**" />
+    <None Remove="client\node_modules\**" />
+    
+    <!-- Auch Build/Dist ausschließen -->
+    <Compile Remove="client\build\**" />
+    <Content Remove="client\build\**" />
+    <None Remove="client\build\**" />
+    
+    <Compile Remove="client\dist\**" />
+    <Content Remove="client\dist\**" />
+    <None Remove="client\dist\**" />
+  </ItemGroup>
+</Project>

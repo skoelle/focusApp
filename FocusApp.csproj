@@ -1,0 +1,38 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.1" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.1">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="8.0.0" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
+    <PackageReference Include="System.Text.Json" Version="8.0.6" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Frontend Build Output inkludieren -->
+    <Content Include="client\build\**" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <!-- Automatisches Frontend-Build bei Publish (nur Release) -->
+  <Target Name="BuildFrontend" BeforeTargets="Publish" Condition="'$(Configuration)' == 'Release'">
+    <Message Text="🔨 Building React Frontend..." Importance="high" />
+    
+    <!-- NPM Install falls node_modules nicht existiert -->
+    <Exec Command="cd client &amp;&amp; npm install" Condition="!Exists('client\node_modules')" WorkingDirectory="$(ProjectDir)" />
+    
+    <!-- NPM Build -->
+    <Exec Command="cd client &amp;&amp; npm run build" WorkingDirectory="$(ProjectDir)" />
+    
+    <Message Text="✅ Frontend Build abgeschlossen!" Importance="high" />
+  </Target>
+
+</Project>
