@@ -167,8 +167,12 @@ FocusApp/
 ├── client/                    # React Frontend (TypeScript, Vite)
 │   ├── src/
 │   │   ├── components/        # React Komponenten
+│   │   │   ├── TaskCard.tsx
+│   │   │   └── TaskForm.tsx
+│   │   ├── styles/            # CSS Design System
 │   │   ├── App.tsx            # Haupt-App
 │   │   ├── api.ts             # Axios API Client
+│   │   ├── types.ts           # TypeScript Types
 │   │   └── main.tsx           # Entry Point
 │   ├── build/                 # Production Build
 │   └── package.json
@@ -179,13 +183,18 @@ FocusApp/
 ├── Models/
 │   ├── FocusTask.cs           # Domain Model
 │   └── Dtos.cs                # API Data Transfer Objects
+├── Properties/
 ├── Program.cs                 # ASP.NET Startup
 ├── FocusApp.csproj            # Projekt-Datei
+├── FocusApp.sln               # Solution File
+├── Directory.Build.props
 ├── appsettings.json           # Config
 ├── Dockerfile                 # Multi-Stage Docker Build
 ├── docker-compose.yml         # Docker Compose Konfiguration
 ├── .env.example               # Environment Template
-└── init-db.sql                # MariaDB Init Script
+├── init-db.sql                # MariaDB Init Script
+├── LICENSE                    # MIT License
+└── renovate.json              # Dependency Updates
 ```
 
 ## 🐛 Troubleshooting
