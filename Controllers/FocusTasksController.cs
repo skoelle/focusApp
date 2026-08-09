@@ -33,6 +33,12 @@ public class FocusTasksController : ControllerBase
         if (string.IsNullOrWhiteSpace(dto.Title))
             return BadRequest("Title is required");
 
+        if (dto.Title.Length > 255)
+            return BadRequest("Title must not exceed 255 characters");
+
+        if (dto.Description != null && dto.Description.Length > 2000)
+            return BadRequest("Description must not exceed 2000 characters");
+
         var maxOrder = await _context.FocusTasks.MaxAsync(t => (int?)t.Order) ?? 0;
 
         var task = new FocusTask
@@ -58,10 +64,18 @@ public class FocusTasksController : ControllerBase
             return NotFound();
 
         if (!string.IsNullOrWhiteSpace(dto.Title))
+        {
+            if (dto.Title.Length > 255)
+                return BadRequest("Title must not exceed 255 characters");
             task.Title = dto.Title;
+        }
 
         if (dto.Description != null)
+        {
+            if (dto.Description.Length > 2000)
+                return BadRequest("Description must not exceed 2000 characters");
             task.Description = dto.Description;
+        }
 
         if (dto.Order.HasValue)
             task.Order = dto.Order.Value;
@@ -88,7 +102,7 @@ public class FocusTasksController : ControllerBase
             var task = await _context.FocusTasks.FindAsync(order.Id);
             if (task != null)
             {
-                // Invertiere die Order: höchste wird niedrigste und umgekehrt
+                // Invertiere die Order: hï¿½chste wird niedrigste und umgekehrt
                 task.Order = maxOrder - order.Order;
                 task.UpdatedAt = DateTime.UtcNow;
                 _context.FocusTasks.Update(task);
@@ -97,7 +111,7 @@ public class FocusTasksController : ControllerBase
 
         await _context.SaveChangesAsync();
 
-        // Rückgabe: absteigend sortiert (neue oben)
+        // Rï¿½ckgabe: absteigend sortiert (neue oben)
         return Ok(await _context.FocusTasks.OrderByDescending(t => t.Order).ToListAsync());
     }
 

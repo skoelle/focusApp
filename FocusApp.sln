@@ -7,7 +7,6 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{12345678-1234-1234-1234-123456789012}"
 	ProjectSection(SolutionItems) = preProject
 		.gitignore = .gitignore
-		deploy.ps1 = deploy.ps1
 		Directory.Build.props = Directory.Build.props
 		README.md = README.md
 	EndProjectSection

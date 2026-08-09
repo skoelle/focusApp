@@ -22,8 +22,8 @@
     <Content Include="client\build\**" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
-  <!-- Automatisches Frontend-Build bei Publish (nur Release) -->
-  <Target Name="BuildFrontend" BeforeTargets="Publish" Condition="'$(Configuration)' == 'Release'">
+  <!-- Automatisches Frontend-Build bei Publish (nur Release, skip mit -p:SkipFrontendBuild=true) -->
+  <Target Name="BuildFrontend" BeforeTargets="Publish" Condition="'$(Configuration)' == 'Release' AND '$(SkipFrontendBuild)' != 'true'">
     <Message Text="🔨 Building React Frontend..." Importance="high" />
     
     <!-- NPM Install falls node_modules nicht existiert -->
