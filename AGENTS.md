@@ -4,6 +4,7 @@
 
 - Nach jeder CSS-Anpassung (`*.css` Dateien) immer `cd client && npm run build` ausfuehren um zu pruefen ob der Build fehlerfrei durchlaeuft
 - Nach Aenderungen an Komponenten-Dateien (`*.tsx`) ebenfalls `npm run build` ausfuehren
+- Nach Aenderungen an TypeScript-Dateien (`*.ts`, `*.tsx`) immer `npm run lint` ausfuehren
 
 ## .NET / Backend
 
