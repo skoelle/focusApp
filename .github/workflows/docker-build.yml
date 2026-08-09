@@ -64,6 +64,14 @@ jobs:
 
           echo "Package: $PACKAGE_NAME"
 
+          # Pruefen ob das Package ueberhaupt existiert
+          if ! gh api \
+            -H "Accept: application/vnd.github+json" \
+            "/user/packages/container/$PACKAGE_NAME" > /dev/null 2>&1; then
+            echo "Package existiert noch nicht, kein Cleanup noetig."
+            exit 0
+          fi
+
           # Alle Versions-IDs abrufen, sortiert nach Erstellungsdatum (neueste zuerst)
           VERSION_IDS=$(gh api \
             -H "Accept: application/vnd.github+json" \
