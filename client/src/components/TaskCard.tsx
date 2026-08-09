@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { FocusTask } from '../types';
 import './TaskCard.css';
 
@@ -12,6 +12,11 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onUpdate, onDelete }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editTitle, setEditTitle] = useState(task.title);
   const [editDescription, setEditDescription] = useState(task.description || '');
+
+  useEffect(() => {
+    setEditTitle(task.title);
+    setEditDescription(task.description || '');
+  }, [task.id, task.title, task.description]);
 
   const handleSave = () => {
     if (editTitle.trim()) {
