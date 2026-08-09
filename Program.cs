@@ -4,6 +4,8 @@ using Microsoft.Extensions.FileProviders;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Logging.AddFilter("Microsoft.AspNetCore.HttpLogging", LogLevel.Information);
+
 // Connection-String aus ENV-Variablen aufbauen (appsettings.json ist Fallback)
 static string BuildConnectionString(IConfiguration config)
 {
@@ -32,6 +34,14 @@ builder.Services.AddCors(options =>
               .AllowAnyMethod()
               .AllowAnyHeader();
     });
+});
+
+builder.Services.AddHttpLogging(options =>
+{
+    options.LoggingFields = Microsoft.AspNetCore.HttpLogging.HttpLoggingFields.All;
+    options.RequestHeaders.Add("traceparent");
+    options.RequestBodyLogLimit = 4096;
+    options.ResponseBodyLogLimit = 4096;
 });
 
 builder.Services.AddControllers();
@@ -77,6 +87,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseCors("AllowReact");
+app.UseHttpLogging();
 
 // STATIC FILES VOR UseRouting!
 var clientPath = Path.Combine(app.Environment.ContentRootPath, "client", "build");
