@@ -1,0 +1,26 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:recommended"
+  ],
+  "schedule": ["before 6am on Monday"],
+  "prConcurrentLimit": 5,
+  "prHourlyLimit": 2,
+  "packageRules": [
+    {
+      "matchUpdateTypes": ["patch", "pin"],
+      "automerge": true
+    },
+    {
+      "matchPackagePatterns": ["@types/*"],
+      "groupName": "type definitions"
+    },
+    {
+      "matchPackagePatterns": ["eslint*", "prettier*"],
+      "groupName": "linting & formatting"
+    }
+  ],
+  "docker-compose": {
+    "fileMatch": ["docker-compose\\.ya?ml$"]
+  }
+}
