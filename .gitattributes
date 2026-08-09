@@ -1,0 +1,2 @@
+# Exclude CSS from GitHub language statistics
+*.css linguist-vendored=true
