@@ -196,6 +196,20 @@ npm run dev
 React Dev Server laeuft auf: `http://localhost:5173`
 API-Calls werden automatisch an `http://localhost:5000` weitergeleitet (siehe `vite.config.ts`).
 
+### Tests
+
+**Backend (xUnit):**
+```bash
+cd FocusApp.Tests
+dotnet test
+```
+
+**Frontend (ESLint):**
+```bash
+cd client
+npm run lint
+```
+
 ## 📦 Projektstruktur
 
 ```
