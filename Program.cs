@@ -40,8 +40,12 @@ builder.Services.AddCors(options =>
 
 builder.Services.AddHttpLogging(options =>
 {
-    options.LoggingFields = Microsoft.AspNetCore.HttpLogging.HttpLoggingFields.All;
-    options.RequestHeaders.Add("traceparent");
+    options.LoggingFields = Microsoft.AspNetCore.HttpLogging.HttpLoggingFields.RequestPath
+        | Microsoft.AspNetCore.HttpLogging.HttpLoggingFields.RequestMethod
+        | Microsoft.AspNetCore.HttpLogging.HttpLoggingFields.ResponseStatusCode
+        | Microsoft.AspNetCore.HttpLogging.HttpLoggingFields.Duration
+        | Microsoft.AspNetCore.HttpLogging.HttpLoggingFields.RequestBody
+        | Microsoft.AspNetCore.HttpLogging.HttpLoggingFields.ResponseBody;
     options.RequestBodyLogLimit = 4096;
     options.ResponseBodyLogLimit = 4096;
 });
