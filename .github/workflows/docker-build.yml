@@ -1,0 +1,101 @@
+name: Docker Build & Push
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=raw,value=latest
+            type=sha,prefix=
+
+      - name: Build and push
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  cleanup-old-images:
+    runs-on: ubuntu-latest
+    needs: build-and-push
+    permissions:
+      packages: write
+
+    steps:
+      - name: Cleanup old images (keep last 4)
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          PACKAGE_NAME=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
+
+          echo "Package: $PACKAGE_NAME"
+
+          # Alle Versions-IDs abrufen, sortiert nach Erstellungsdatum (neueste zuerst)
+          VERSION_IDS=$(gh api \
+            -H "Accept: application/vnd.github+json" \
+            "/user/packages/maven/$PACKAGE_NAME/versions" \
+            --paginate \
+            -q 'sort_by(.created_at) | reverse | .[].id' 2>/dev/null || \
+          gh api \
+            -H "Accept: application/vnd.github+json" \
+            "/user/packages/container/$PACKAGE_NAME/versions" \
+            --paginate \
+            -q 'sort_by(.created_at) | reverse | .[].id')
+
+          # In Array umwandeln
+          mapfile -t IDS <<< "$VERSION_IDS"
+          TOTAL=${#IDS[@]}
+
+          echo "Gefundene Versionen: $TOTAL"
+
+          if [ "$TOTAL" -le 4 ]; then
+            echo "Nur $TOTAL Versionen vorhanden, kein Cleanup noetig."
+            exit 0
+          fi
+
+          # Alle loeschen bis auf die ersten 4
+          for ((i=4; i<TOTAL; i++)); do
+            VERSION_ID="${IDS[$i]}"
+            echo "Loesche Version ID: $VERSION_ID"
+            gh api \
+              --method DELETE \
+              -H "Accept: application/vnd.github+json" \
+              "/user/packages/container/$PACKAGE_NAME/versions/$VERSION_ID" || \
+            echo "WARNUNG: Konnte Version $VERSION_ID nicht loeschen"
+          done
+
+          echo "Cleanup abgeschlossen. $TOTAL -> 4 Versionen behalten."
