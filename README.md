@@ -139,6 +139,42 @@ Content-Type: application/json
 [1, 3, 2, 4]
 ```
 
+### Health Check
+```http
+GET /api/health
+```
+
+Response (200 OK):
+```json
+{
+  "status": "healthy",
+  "database": "connected",
+  "timestamp": "2026-08-09T12:00:00Z",
+  "version": "2.0.0"
+}
+```
+
+Response (503 Service Unavailable):
+```json
+{
+  "status": "unhealthy",
+  "database": "disconnected",
+  "timestamp": "2026-08-09T12:00:00Z",
+  "version": "2.0.0"
+}
+```
+
+**Uptime Kuma Konfiguration:**
+- URL: `http://localhost:5000/api/health`
+- Methode: GET
+- Erwarteter Status: 200
+- Intervall: 60 Sekunden
+
+**Docker Healthcheck:**
+- Automatisch in `docker-compose.yml` konfiguriert
+- Prüft alle 30 Sekunden den Health Endpoint
+- Container wird als `healthy`/`unhealthy` markiert
+
 ## 🎯 Entwicklung
 
 ### Backend (Development)
