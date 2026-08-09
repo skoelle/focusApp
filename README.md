@@ -177,6 +177,20 @@ Response (503 Service Unavailable):
 
 ## 🎯 Entwicklung
 
+### Demo-Modus
+
+Ohne MariaDB läuft die App automatisch im Demo-Modus mit SQLite und 4 Beispielaufgaben:
+
+```bash
+dotnet run
+```
+
+- Frontend: `http://localhost:5000`
+- Swagger: `http://localhost:5000/swagger`
+- Datenbank: `focusapp-demo.db` (automatisch erstellt)
+
+Für Produktion mit MariaDB simply die `.env` ausfüllen (siehe Deployment).
+
 ### Backend (Development)
 
 ```bash
