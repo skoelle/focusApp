@@ -1,6 +1,6 @@
 services:
   app:
-    image: ghcr.io/stefan-koelle/focusapp:latest
+    image: ghcr.io/skoelle/focusapp:latest
     container_name: focusapp
     restart: unless-stopped
     ports:
