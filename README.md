@@ -1,6 +1,6 @@
 # FocusApp - Todo Application
 
-Eine moderne, minimalistische Todo-Anwendung mit Drag & Drop, gebaut mit React und ASP.NET Core 8.0.
+Eine moderne, minimalistische Todo-Anwendung mit Drag & Drop, gebaut mit React und ASP.NET Core.
 
 ## 🚀 Features
 
