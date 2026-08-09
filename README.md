@@ -223,9 +223,86 @@ ports:
 
 ## 🔐 Sicherheit
 
-### Reverse Proxy (nginx)
+### Authentifizierung mit Authelia
 
-Fuer Production mit HTTPS empfohlen:
+Die FocusApp hat **keine eigene Authentifizierung**. Alle Endpoints sind offen zugänglich. Für einen Produktiveinsatz **muss** die App hinter einem Authentifizierungs-Proxy betrieben werden.
+
+[Authelia](https://www.authelia.com/) stellt Single Sign-On (SSO) bereit und schützt die App mit einem Reverse Proxy.
+
+**Architektur:**
+```
+Browser → nginx + Authelia → FocusApp (Docker)
+                ↓
+         MariaDB (extern)
+```
+
+**Voraussetzungen:**
+- Authelia läuft als eigener Container/Dienst
+- nginx als Reverse Proxy mit Authelia-Integration
+
+**nginx-Konfiguration mit Authelia:**
+
+```nginx
+# Authelia snippet einbinden
+include /etc/nginx/authelia/authelia-location.conf;
+
+server {
+    listen 443 ssl;
+    server_name focus.example.com;
+
+    ssl_certificate     /etc/ssl/certs/focus.crt;
+    ssl_certificate_key /etc/ssl/private/focus.key;
+
+    # Schuetzt alle Routes hinter Authelia
+    location / {
+        include /etc/nginx/authelia/authelia-authrequest.conf;
+        proxy_pass http://localhost:5000;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection keep-alive;
+        proxy_set_header Host $host;
+        proxy_cache_bypass $http_upgrade;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header Remote-User $remote_user;
+    }
+}
+```
+
+**Authelia-Konfiguration (`configuration.yml`):**
+
+```yaml
+access_control:
+  default_policy: one_factor
+  rules:
+    # API-Endpoints ebenfalls schuetzen
+    - domain: focus.example.com
+      resources:
+        - "^/api/.*$"
+      policy: one_factor
+
+session:
+  name: focusapp_session
+  secret: "your-session-secret"
+  cookies:
+    - domain: focus.example.com
+      authelia_url: https://auth.example.com
+      default_redirection_url: https://focus.example.com
+
+identity_providers:
+  - id: ldap
+    # oder: - id: openid_connect
+```
+
+**Wichtig:**
+- Ohne Authelia ist die App komplett offen — kein Schutz für API oder Frontend
+- Authelia prüft vor jedem Request die Sitzung
+- Der `/api/` Pfad muss ebenfalls geschützt werden (nicht nur `/`)
+- Für API-Clients (z.B. Mobile Apps) kann eine API-Key-Lösung implementiert werden
+
+### Reverse Proxy (nginx) ohne Authelia
+
+Für lokale Entwicklung/Tests ohne Auth:
 
 ```nginx
 server {
