@@ -6,7 +6,6 @@ Eine moderne, minimalistische Todo-Anwendung mit Drag & Drop, gebaut mit React u
 
 - ✅ **Todo-Verwaltung** - Erstellen, Bearbeiten, Loschen von Aufgaben
 - 🎯 **Drag & Drop** - Intuitive Neuordnung der Aufgaben
-
 - 📱 **Responsive Design** - Optimiert fur Desktop und Mobile
 - 🔄 **RESTful API** - Saubere Backend-Architektur
 
