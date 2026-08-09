@@ -8,25 +8,39 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Logging.AddFilter("Microsoft.AspNetCore.HttpLogging", LogLevel.Information);
 
-// Connection-String aus ENV-Variablen aufbauen (appsettings.json ist Fallback)
-static string BuildConnectionString(IConfiguration config)
+// Datenbank: MariaDB oder SQLite (Demo-Modus)
+static void ConfigureDatabase(IConfiguration config, IServiceCollection services)
 {
-    return $"Server={config["DB_HOST"] ?? "localhost"};" +
-           $"Port={config["DB_PORT"] ?? "3306"};" +
-           $"Database={config["DB_NAME"] ?? "focusapp"};" +
-           $"User={config["DB_USER"] ?? "focusapp"};" +
-           $"Password={config["DB_PASSWORD"] ?? "change-password"}";
+    var dbHost = config["DB_HOST"];
+
+    if (!string.IsNullOrEmpty(dbHost))
+    {
+        // Produktion: MariaDB
+        var connectionString = $"Server={dbHost};" +
+                               $"Port={config["DB_PORT"] ?? "3306"};" +
+                               $"Database={config["DB_NAME"] ?? "focusapp"};" +
+                               $"User={config["DB_USER"] ?? "focusapp"};" +
+                               $"Password={config["DB_PASSWORD"] ?? "change-password"}";
+
+        services.AddDbContext<FocusContext>(options =>
+            options.UseMySql(
+                connectionString,
+                ServerVersion.AutoDetect(connectionString)
+            )
+        );
+        Console.WriteLine("Using MariaDB database");
+    }
+    else
+    {
+        // Demo-Modus: SQLite
+        services.AddDbContext<FocusContext>(options =>
+            options.UseSqlite("Data Source=focusapp-demo.db")
+        );
+        Console.WriteLine("Using SQLite database (demo mode)");
+    }
 }
 
-var connectionString = BuildConnectionString(builder.Configuration);
-
-// Add services
-builder.Services.AddDbContext<FocusContext>(options =>
-    options.UseMySql(
-        connectionString,
-        ServerVersion.AutoDetect(connectionString)
-    )
-);
+ConfigureDatabase(builder.Configuration, builder.Services);
 
 builder.Services.AddCors(options =>
 {
