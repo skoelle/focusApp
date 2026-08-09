@@ -8,3 +8,9 @@
 ## Docker
 
 - Nach Aenderungen am `Dockerfile` oder `docker-compose.yml` immer `docker build .` ausfuehren
+
+## License
+
+MIT License - Copyright (c) 2026 Stefan Koelle (https://stefankoelle.de)
+- Full text in `LICENSE`
+- License headers in all source code files

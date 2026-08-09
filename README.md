@@ -324,5 +324,7 @@ server {
 
 ---
 
-**Version:** 2.0.0
-**Letzte Aktualisierung:** 09. August 2026
+## License
+
+Licensed under the [MIT License](LICENSE) - Copyright (c) 2026 Stefan Koelle (https://stefankoelle.de)
+

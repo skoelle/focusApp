@@ -19,6 +19,7 @@ RUN dotnet publish FocusApp.csproj -c Release -o /app/publish --no-restore -p:Sk
 FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS runtime
 WORKDIR /app
 COPY --from=build /app/publish .
+COPY LICENSE .
 EXPOSE 5000
 ENV ASPNETCORE_URLS=http://0.0.0.0:5000
 ENV ASPNETCORE_ENVIRONMENT=Production
