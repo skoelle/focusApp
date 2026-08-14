@@ -1,0 +1,6 @@
+title: "Focus App"
+emoji: "🎯"
+category: code
+subcategory: "Smart Home Apps"
+status: active
+stack: [C#, .NET, React, TypeScript, Entity Framework Core, MariaDB, Docker]
